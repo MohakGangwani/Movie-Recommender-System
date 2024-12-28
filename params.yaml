@@ -1,1 +1,25 @@
-data_path: "./Data/TMDB_all_movies.csv"
+data_path: "Data/TMDB_all_movies.csv"
+preprocessed_data_path: "Data/preprocessed_data.pkl"
+vector_path: "models/vector.pkl"
+model_path: "models/similarity_model.pkl"
+drop_columns:
+  - id
+  - vote_average
+  - vote_count
+  - status
+  - release_date
+  - revenue
+  - runtime
+  - budget
+  - imdb_id
+  - original_language
+  - original_title
+  - popularity
+  - imdb_rating
+  - imdb_votes
+  - tagline
+  - music_composer
+  - director_of_photography
+cv_max_df: 0.5
+cv_min_df: 100
+cv_max_features: 100000
