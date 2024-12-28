@@ -1,0 +1,6 @@
+ipykernel
+pandas
+nltk
+scikit-learn
+pyyaml
+spacy

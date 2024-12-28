@@ -1,4 +1,0 @@
-ipykernel
-pandas
-pyspark
-nltk
