@@ -35,7 +35,7 @@ def load_preprocess_data(params):
         raw_data = pd.read_csv(params["data_path"])
         preprocessed_data = preprocess_data(raw_data, params)
         Path("/".join(preprocessed_path.split("/")[:-1])+"/").mkdir(parents=True, exist_ok=True)
-        pd.to_pickle(preprocessed_path, index=False)
+        preprocessed_data.to_pickle(preprocessed_path)
         return preprocessed_data
 
 
@@ -120,6 +120,9 @@ def preprocess_data(data, params):
     data = data[["title", "overview", "Tags", "poster_path"]]
     data["Tags"] = data["Tags"].astype(str).str.replace(r"[^\p{L}\s]", "").str.lower()
     data["Processed_Tags"] = preprocess_large_text(data["Tags"])
+    data.loc[~data["poster_path"].isnull(), "poster_path"]="https://image.tmdb.org/t/p/original"+data.loc[~data["poster_path"].isnull(), "poster_path"]
+    data["poster_path"] = data["poster_path"].fillna("static/images/image.jpeg")
+    data.reset_index(drop=True, inplace=True)
     return data
 
 
@@ -148,12 +151,5 @@ def recommend_movie(movie_id, params):
     model = get_sim_model(vector, params)
     movies = model.kneighbors(vector, n_neighbors=params["nrecommendatios"]+1, return_distance=False).flatten()
     data = pd.read_pickle(params["preprocessed_data_path"])
-    movies = [
-        (
-            data.iloc[id,"title"], 
-            ("https://image.tmdb.org/t/p/original/"+data.iloc[id,"poster_path"])
-        ) 
-        for id in movies[1:]
-        ]
-    description = data.iloc[movies[0],"overview"]
-    return movies, description
+    movies = {id:data.iloc[id,:] for id in movies[1:]}
+    return movies

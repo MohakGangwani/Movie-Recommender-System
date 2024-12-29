@@ -1,28 +1,49 @@
 {% extends "base.html" %}
 {% block content %}
-    <form method="get" action="{{ url_for('index') }}">
-        <input type="text" name="query" placeholder="Search movies..." value="{{ query }}">
-        <button type="submit">Search</button>
+<div class="container my-4">
+    <!-- Search Form -->
+    <form method="get" action="{{ url_for('index') }}" class="mb-4">
+        <div class="input-group">
+            <input type="text" class="form-control" name="query" placeholder="Search movies..." value="{{ query }}">
+            <button type="submit" class="btn btn-primary">Search</button>
+        </div>
     </form>
-    
-    <div class="movie-list">
+
+    <!-- Movie Grid -->
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-5 g-4">
         {% for id in movies.keys() %}
-            <div class="movie">
-                <a href="{{ url_for('movie_details', movie_id=id) }}">
-                    <img src="{{ 'https://image.tmdb.org/t/p/original' + movies[id]['poster_path'] }}" alt="{{ movies[id]['title'] }}">
-                    <h3>{{ movies[id]['title'] }}</h3>
-                </a>
+            <div class="col">
+                <div class="card h-100">
+                    <a href="{{ url_for('movie_details', movie_id=id) }}">
+                        <img src="{{ movies[id]['poster_path'] }}" class="card-img-top" alt="{{ movies[id]['title'] }}">
+                        <div class="card-body">
+                            <h5 class="card-title text-center">{{ movies[id]['title'] }}</h5>
+                        </div>
+                    </a>
+                </div>
             </div>
         {% endfor %}
     </div>
-    
-    <div class="pagination">
-        {% if page > 1 %}
-            <a href="{{ url_for('index', query=query, page=page-1) }}">Previous</a>
-        {% endif %}
-        <span>Page {{ page }} of {{ total_pages }}</span>
-        {% if page < total_pages %}
-            <a href="{{ url_for('index', query=query, page=page+1) }}">Next</a>
-        {% endif %}
+
+    <!-- Pagination -->
+    <div class="d-flex justify-content-center mt-4">
+        <nav>
+            <ul class="pagination">
+                {% if page > 1 %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('index', query=query, page=page-1) }}">Previous</a>
+                    </li>
+                {% endif %}
+                <li class="page-item disabled">
+                    <span class="page-link">Page {{ page }} of {{ total_pages }}</span>
+                </li>
+                {% if page < total_pages %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('index', query=query, page=page+1) }}">Next</a>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
     </div>
+</div>
 {% endblock %}

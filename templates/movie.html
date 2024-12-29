@@ -1,21 +1,32 @@
 {% extends "base.html" %}
 {% block content %}
-    <div class="movie-details">
-        <img src="{{ url_for('static', filename='images/' + movie.poster) }}" alt="{{ movie.title }}">
-        <h2>{{ movie.title }}</h2>
-        <p>{{ movie.overview }}</p>
+<div class="container my-4">
+    <!-- Movie Details Section -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <img src="{{ movie['poster_path'] }}" class="img-fluid rounded shadow" alt="{{ movie['title'] }}">
+        </div>
+        <div class="col-md-8">
+            <h1 class="mb-3">{{ movie['title'] }}</h1>
+            <p class="lead">{{ movie['overview'] }}</p>
+        </div>
     </div>
-    <div class="recommendations">
-        <h3>Recommended Movies</h3>
-        <ul>
-            {% for rec in recommendations %}
-                <li>
-                    <a href="{{ url_for('movie_details', movie_id=rec.id) }}">
-                        <img src="{{ url_for('static', filename='images/' + rec.poster) }}" alt="{{ rec.title }}">
-                        <span>{{ rec.title }}</span>
+
+    <!-- Recommendations Section -->
+    <h2 class="mb-4">Recommended Movies</h2>
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-5 g-4">
+        {% for id in recommendations.keys() %}
+            <div class="col">
+                <div class="card h-100">
+                    <a href="{{ url_for('movie_details', movie_id=id) }}">
+                        <img src="{{ recommendations[id]['poster_path'] }}" class="card-img-top" alt="{{ recommendations[id]['title'] }}">
+                        <div class="card-body">
+                            <h5 class="card-title text-center">{{ recommendations[id]['title'] }}</h5>
+                        </div>
                     </a>
-                </li>
-            {% endfor %}
-        </ul>
+                </div>
+            </div>
+        {% endfor %}
     </div>
+</div>
 {% endblock %}
