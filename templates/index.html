@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block content %}
+    <form method="get" action="{{ url_for('index') }}">
+        <input type="text" name="query" placeholder="Search movies..." value="{{ query }}">
+        <button type="submit">Search</button>
+    </form>
+    
+    <div class="movie-list">
+        {% for id in movies.keys() %}
+            <div class="movie">
+                <a href="{{ url_for('movie_details', movie_id=id) }}">
+                    <img src="{{ 'https://image.tmdb.org/t/p/original' + movies[id]['poster_path'] }}" alt="{{ movies[id]['title'] }}">
+                    <h3>{{ movies[id]['title'] }}</h3>
+                </a>
+            </div>
+        {% endfor %}
+    </div>
+    
+    <div class="pagination">
+        {% if page > 1 %}
+            <a href="{{ url_for('index', query=query, page=page-1) }}">Previous</a>
+        {% endif %}
+        <span>Page {{ page }} of {{ total_pages }}</span>
+        {% if page < total_pages %}
+            <a href="{{ url_for('index', query=query, page=page+1) }}">Next</a>
+        {% endif %}
+    </div>
+{% endblock %}

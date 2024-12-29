@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block content %}
+    <div class="movie-details">
+        <img src="{{ url_for('static', filename='images/' + movie.poster) }}" alt="{{ movie.title }}">
+        <h2>{{ movie.title }}</h2>
+        <p>{{ movie.overview }}</p>
+    </div>
+    <div class="recommendations">
+        <h3>Recommended Movies</h3>
+        <ul>
+            {% for rec in recommendations %}
+                <li>
+                    <a href="{{ url_for('movie_details', movie_id=rec.id) }}">
+                        <img src="{{ url_for('static', filename='images/' + rec.poster) }}" alt="{{ rec.title }}">
+                        <span>{{ rec.title }}</span>
+                    </a>
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+{% endblock %}

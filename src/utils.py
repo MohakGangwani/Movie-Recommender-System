@@ -117,7 +117,7 @@ def preprocess_data(data, params):
         + " " + data["writers"].fillna("")
         + " " + data["producers"].fillna("")
     )
-    data = data[["title", "Tags", "poster_path"]]
+    data = data[["title", "overview", "Tags", "poster_path"]]
     data["Tags"] = data["Tags"].astype(str).str.replace(r"[^\p{L}\s]", "").str.lower()
     data["Processed_Tags"] = preprocess_large_text(data["Tags"])
     return data
@@ -141,3 +141,19 @@ def get_sim_model(vector, params):
         with open(model_path, "wb") as model_file:
             pickle.dump(nn, model_file)
         return nn
+
+
+def recommend_movie(movie_id, params):
+    vector = get_vector(None, params)[movie_id]
+    model = get_sim_model(vector, params)
+    movies = model.kneighbors(vector, n_neighbors=params["nrecommendatios"]+1, return_distance=False).flatten()
+    data = pd.read_pickle(params["preprocessed_data_path"])
+    movies = [
+        (
+            data.iloc[id,"title"], 
+            ("https://image.tmdb.org/t/p/original/"+data.iloc[id,"poster_path"])
+        ) 
+        for id in movies[1:]
+        ]
+    description = data.iloc[movies[0],"overview"]
+    return movies, description

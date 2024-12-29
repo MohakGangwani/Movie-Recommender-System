@@ -23,3 +23,4 @@ drop_columns:
 cv_max_df: 0.5
 cv_min_df: 100
 cv_max_features: 100000
+nrecommendatios: 5
