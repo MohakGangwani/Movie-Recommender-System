@@ -1,5 +1,5 @@
 data_path: "Data/TMDB_all_movies.csv"
-preprocessed_data_path: "Data/preprocessed_data.pkl"
+preprocessed_data_path: "Data/preprocessed_data.parquet"
 vector_path: "models/vector.pkl"
 model_path: "models/similarity_model.pkl"
 drop_columns:
@@ -24,3 +24,4 @@ cv_max_df: 0.5
 cv_min_df: 100
 cv_max_features: 100000
 nrecommendations: 5
+img_not_available: "https://feb.kuleuven.be/drc/LEER/visiting-scholars-1/image-not-available.jpg/@@images/image.jpeg"

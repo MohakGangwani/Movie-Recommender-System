@@ -6,3 +6,6 @@ pyyaml
 spacy
 flask
 requests
+pandarallel
+pyarrow
+fastparquet

@@ -7,10 +7,14 @@ from sklearn.neighbors import NearestNeighbors
 import spacy
 import pickle
 from pathlib import Path
+from pandarallel import pandarallel
+import re
+
+# Initialize pandarallel
+pandarallel.initialize(progress_bar=True)
 
 # Download stopwords
 nltk.download("stopwords")
-
 
 def install_spacy_model():
     os.system("python -m spacy download en_core_web_sm")
@@ -20,24 +24,22 @@ def load_params():
     with open("params.yaml", "r") as file:
         return yaml.safe_load(file)
 
-
 def load_preprocess_data(params):
     """
     Load preprocessed data if it exists, otherwise preprocess raw data.
-    Saves preprocessed data to a CSV for future use.
+    Saves preprocessed data to a Parquet file for future use.
     """
     preprocessed_path = params["preprocessed_data_path"]
     if os.path.exists(preprocessed_path):
         print(f"Loading preprocessed data from {preprocessed_path}")
-        return pd.read_pickle(preprocessed_path)
+        return pd.read_parquet(preprocessed_path)
     else:
         print(f"Preprocessing raw data from {params['data_path']}")
         raw_data = pd.read_csv(params["data_path"])
-        preprocessed_data = preprocess_data(raw_data, params)
-        Path("/".join(preprocessed_path.split("/")[:-1])+"/").mkdir(parents=True, exist_ok=True)
-        preprocessed_data.to_pickle(preprocessed_path)
+        preprocessed_data = preprocess_data_parallel(raw_data, params)
+        Path(preprocessed_path).parent.mkdir(parents=True, exist_ok=True)
+        preprocessed_data.to_parquet(preprocessed_path, compression="snappy")
         return preprocessed_data
-
 
 def get_vector(data_preprocessed, params):
     """
@@ -58,73 +60,57 @@ def get_vector(data_preprocessed, params):
             stop_words="english",
         )
         vector = cv.fit_transform(data_preprocessed["Processed_Tags"])
-        Path("/".join(vector_path.split("/")[:-1])+"/").mkdir(parents=True, exist_ok=True)
+        Path(vector_path).parent.mkdir(parents=True, exist_ok=True)
         with open(vector_path, "wb") as vector_file:
             pickle.dump(vector, vector_file)
         return vector
-
 
 def preprocess_large_text(texts):
     """
     Preprocess a list of large texts using spaCy, including lemmatization and stopword removal.
     """
-    nlp = spacy.load("en_core_web_sm")
-    docs = nlp.pipe(
-        texts, batch_size=100, n_process=os.cpu_count(), disable=["ner", "parser"]
-    )
+    nlp = spacy.load("en_core_web_sm", disable=["ner", "parser"])
+    docs = nlp.pipe(texts, batch_size=200, n_process=os.cpu_count())
     return [
-        " ".join(
-            [token.lemma_ for token in doc if token.is_alpha and not token.is_stop]
-        )
+        " ".join([token.lemma_ for token in doc if token.is_alpha and not token.is_stop])
         for doc in docs
     ]
 
-
-def preprocess_data(data, params):
+def preprocess_data_parallel(data, params):
     """
-    Preprocess the dataset by cleaning, lemmatizing, and creating tags.
-    Returns a preprocessed DataFrame.
+    Preprocess data with parallelization.
     """
     data.dropna(subset=["title"], inplace=True)
     drop_cols = params["drop_columns"]
     data.drop(columns=drop_cols, inplace=True, errors="ignore")
 
-    # Clean text fields
+    # Clean text fields in parallel
     fields_to_clean = [
-        "production_companies",
-        "production_countries",
-        "spoken_languages",
-        "cast",
-        "director",
-        "writers",
-        "producers",
-        "genres",
+        "production_companies", "production_countries", 
+        "spoken_languages", "cast", "director", "writers", 
+        "producers", "genres"
     ]
     for field in fields_to_clean:
         if field in data.columns:
-            data[field] = data[field].str.replace(" ", "").str.replace(",", " ", regex=True)
+            data[field] = data[field].parallel_apply(lambda x: re.sub(r"[^\w\s]", " ", str(x).replace(",", " ")))
 
     # Generate combined Tags
-    data["Tags"] = (
-        data["title"].fillna("")
-        + " " + data["overview"].fillna("")
-        + " " + data["genres"].fillna("")
-        + " " + data["production_companies"].fillna("")
-        + " " + data["production_countries"].fillna("")
-        + " " + data["spoken_languages"].fillna("")
-        + " " + data["cast"].fillna("")
-        + " " + data["director"].fillna("")
-        + " " + data["writers"].fillna("")
-        + " " + data["producers"].fillna("")
+    data["Tags"] = data.parallel_apply(
+        lambda row: " ".join([str(row[field]) for field in fields_to_clean if field in row]), axis=1
     )
-    data = data[["title", "overview", "Tags", "poster_path"]]
-    data["Tags"] = data["Tags"].astype(str).str.replace(r"[^\p{L}\s]", "").str.lower()
+
+    # Preprocess text
+    data["Tags"] = data["Tags"].parallel_apply(lambda x: re.sub(r"[^\w\s]", "", x.lower()))
     data["Processed_Tags"] = preprocess_large_text(data["Tags"])
-    data.loc[~data["poster_path"].isnull(), "poster_path"]="https://image.tmdb.org/t/p/original"+data.loc[~data["poster_path"].isnull(), "poster_path"]
-    data["poster_path"] = data["poster_path"].fillna("static/images/image.jpeg")
+
+    # Update poster_path column
+    base_url = "https://image.tmdb.org/t/p/original"
+    data["poster_path"] = data["poster_path"].apply(
+        lambda x: base_url + x if pd.notna(x) else params["img_not_available"]
+    )
+
     data.reset_index(drop=True, inplace=True)
     return data
-
 
 def get_sim_model(vector, params):
     """
@@ -137,14 +123,14 @@ def get_sim_model(vector, params):
         with open(model_path, "rb") as model_file:
             return pickle.load(model_file)
     else:
-        print("Creating similarity model")
+        print("Creating Similarity Model")
         nn = NearestNeighbors(metric="cosine", algorithm="brute")
         nn.fit(vector)
-        Path("/".join(model_path.split("/")[:-1])+"/").mkdir(parents=True, exist_ok=True)
+        Path(model_path).parent.mkdir(parents=True, exist_ok=True)
         with open(model_path, "wb") as model_file:
             pickle.dump(nn, model_file)
         return nn
-
+    
 
 def recommend_movie(movie_id, preloaded_data):
     vector = preloaded_data["vectors"][movie_id]
