@@ -1,10 +1,10 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="container my-4">
+<div class="container my-5">
     <!-- Search Form -->
-    <form method="get" action="{{ url_for('index') }}" class="mb-4">
-        <div class="input-group">
-            <input type="text" class="form-control" name="query" placeholder="Search movies..." value="{{ query }}">
+    <form method="get" action="{{ url_for('index') }}" class="mb-5">
+        <div class="input-group shadow-sm">
+            <input type="text" class="form-control" name="query" placeholder="Search for movies..." value="{{ query }}">
             <button type="submit" class="btn btn-primary">Search</button>
         </div>
     </form>
@@ -13,11 +13,11 @@
     <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-5 g-4">
         {% for id in movies.keys() %}
             <div class="col">
-                <div class="card h-100">
-                    <a href="{{ url_for('movie_details', movie_id=id) }}">
-                        <img src="{{ movies[id]['poster_path'] }}" class="card-img-top" alt="{{ movies[id]['title'] }}">
-                        <div class="card-body">
-                            <h5 class="card-title text-center">{{ movies[id]['title'] }}</h5>
+                <div class="card h-100 border-0 shadow-sm">
+                    <a href="{{ url_for('movie_details', movie_id=id) }}" class="text-decoration-none">
+                        <img src="{{ movies[id]['poster_path'] }}" class="card-img-top rounded" alt="{{ movies[id]['title'] }}">
+                        <div class="card-body text-center">
+                            <h5 class="card-title text-truncate">{{ movies[id]['title'] }}</h5>
                         </div>
                     </a>
                 </div>
@@ -26,9 +26,9 @@
     </div>
 
     <!-- Pagination -->
-    <div class="d-flex justify-content-center mt-4">
+    <div class="d-flex justify-content-center mt-5">
         <nav>
-            <ul class="pagination">
+            <ul class="pagination shadow-sm">
                 {% if page > 1 %}
                     <li class="page-item">
                         <a class="page-link" href="{{ url_for('index', query=query, page=page-1) }}">Previous</a>

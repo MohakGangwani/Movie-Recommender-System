@@ -146,10 +146,9 @@ def get_sim_model(vector, params):
         return nn
 
 
-def recommend_movie(movie_id, params):
-    vector = get_vector(None, params)[movie_id]
-    model = get_sim_model(vector, params)
-    movies = model.kneighbors(vector, n_neighbors=params["nrecommendatios"]+1, return_distance=False).flatten()
-    data = pd.read_pickle(params["preprocessed_data_path"])
-    movies = {id:data.iloc[id,:] for id in movies[1:]}
-    return movies
+def recommend_movie(movie_id, preloaded_data):
+    vector = preloaded_data["vectors"][movie_id]
+    model = preloaded_data["model"]
+    similar_movie_ids = model.kneighbors(vector, n_neighbors=preloaded_data["params"]["nrecommendations"] + 1, return_distance=False).flatten()
+    recommended_movies = {id: preloaded_data["movies"][id] for id in similar_movie_ids[1:]}  # Exclude the input movie
+    return recommended_movies

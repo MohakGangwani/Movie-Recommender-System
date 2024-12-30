@@ -1,27 +1,27 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="container my-4">
+<div class="container my-5">
     <!-- Movie Details Section -->
-    <div class="row mb-4">
+    <div class="row mb-5 align-items-center">
         <div class="col-md-4">
-            <img src="{{ movie['poster_path'] }}" class="img-fluid rounded shadow" alt="{{ movie['title'] }}">
+            <img src="{{ movie['poster_path'] }}" class="img-fluid rounded shadow-lg" alt="{{ movie['title'] }}">
         </div>
         <div class="col-md-8">
-            <h1 class="mb-3">{{ movie['title'] }}</h1>
-            <p class="lead">{{ movie['overview'] }}</p>
+            <h1 class="mb-3 fw-bold">{{ movie['title'] }}</h1>
+            <p class="lead text-muted">{{ movie['overview'] }}</p>
         </div>
     </div>
 
     <!-- Recommendations Section -->
-    <h2 class="mb-4">Recommended Movies</h2>
+    <h2 class="mb-4 fw-bold text-center">You Might Also Like</h2>
     <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-5 g-4">
         {% for id in recommendations.keys() %}
             <div class="col">
-                <div class="card h-100">
-                    <a href="{{ url_for('movie_details', movie_id=id) }}">
-                        <img src="{{ recommendations[id]['poster_path'] }}" class="card-img-top" alt="{{ recommendations[id]['title'] }}">
-                        <div class="card-body">
-                            <h5 class="card-title text-center">{{ recommendations[id]['title'] }}</h5>
+                <div class="card h-100 border-0 shadow-sm">
+                    <a href="{{ url_for('movie_details', movie_id=id) }}" class="text-decoration-none">
+                        <img src="{{ recommendations[id]['poster_path'] }}" class="card-img-top rounded" alt="{{ recommendations[id]['title'] }}">
+                        <div class="card-body text-center">
+                            <h5 class="card-title text-truncate">{{ recommendations[id]['title'] }}</h5>
                         </div>
                     </a>
                 </div>
