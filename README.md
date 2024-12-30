@@ -12,10 +12,12 @@ This repository contains a **Movie Recommendation System** project developed usi
 1. **Data Preprocessing**:
    - Utilized the TMDB dataset from Kaggle, which includes rich metadata on movies.
    - Cleaned and preprocessed data to handle missing values, duplicates, and inconsistencies.
+   - Parallelized preprocessing tasks using Pandarallel for improved efficiency.
 
 2. **Feature Engineering**:
    - Extracted relevant features such as genres, keywords, and cast information.
    - Employed natural language processing (NLP) techniques to process textual data.
+   - Employed SpaCy for advanced text cleaning.
 
 3. **Similarity Calculation**:
    - Implemented K-Nearest Neighbors (KNN) and TF-IDF vectorization to measure the closeness of movie features.
@@ -29,9 +31,9 @@ This repository contains a **Movie Recommendation System** project developed usi
 
 - **Programming Language**: Python
 - **Web Framework**: Flask
-- **Data Analysis**: Pandas, NumPy
+- **Data Analysis**: Pandas, Pandarallel, NumPy
 - **Machine Learning**: Scikit-learn (KNN, TF-IDF Vectorizer)
-- **Natural Language Processing**: Scikit-learn (TF-IDF Vectorizer)
+- **Natural Language Processing**: SpaCy, Scikit-learn (TF-IDF Vectorizer)
 
 ## Installation
 
